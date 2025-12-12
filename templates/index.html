@@ -1,207 +1,570 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Management</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Management — Dashboard</title>
 
-    <!-- Bootstrap CSS -->
-    <link 
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
-        rel="stylesheet"
-    >
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-        body {
-            background: #f4f7fb;
-        }
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
-        .navbar {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
+  <!-- Optional small animate.css-like helper (we'll implement keyframes below) -->
+  <style>
+    :root{
+      --primary:#0d6efd;
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --muted:#6c757d;
+      --radius:14px;
+    }
 
-        .page-title {
-            font-weight: 700;
-            color: #333;
-        }
+    html,body{
+      height:100%;
+      background: linear-gradient(180deg,#f6f8fb 0%, #eef3fb 100%);
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+    }
 
-        .card-modern {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
-        }
+    /* Top navbar */
+    .app-navbar{
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.7);
+      border-bottom: 1px solid rgba(15,23,42,0.04);
+      z-index: 1030;
+    }
 
-        .table thead th {
-            background: #1a73e8;
-            color: #fff;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
+    /* Cards */
+    .card-modern{
+      border: none;
+      border-radius: var(--radius);
+      box-shadow: 0 6px 22px rgba(16,24,40,0.06);
+      background: var(--card);
+    }
 
-        .btn-modern {
-            border-radius: 8px;
-            font-weight: 500;
-        }
+    /* Dashboard metric */
+    .metric {
+      display:flex;
+      gap:.75rem;
+      align-items:center;
+    }
+    .metric .icon {
+      display:inline-grid;
+      place-items:center;
+      width:48px;height:48px;border-radius:10px;
+      background: linear-gradient(135deg, rgba(13,110,253,0.12), rgba(13,110,253,0.06));
+      color:var(--primary);
+      font-size:1.25rem;
+    }
+    .metric .value { font-weight:700; font-size:1.25rem; }
+    .metric .label { color:var(--muted); font-size:.85rem; }
 
-        .modal-content {
-            border-radius: 15px;
-        }
+    /* Table */
+    .table thead th {
+      border-bottom: none;
+      background: linear-gradient(90deg,#0d6efd, #0b5ed7);
+      color:white;
+      font-weight:600;
+      font-size:.95rem;
+      vertical-align:middle;
+    }
+    .table tbody tr {
+      transition: transform .18s ease, box-shadow .18s ease;
+      transform-origin: left center;
+    }
+    .table tbody tr:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(15,23,42,0.06);
+    }
 
-        .modal-header {
-            background: #1a73e8;
-            color: white;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-        }
+    /* Buttons */
+    .btn-pill { border-radius: 999px; padding: .42rem .9rem; }
+    .btn-ghost { background: transparent; border: 1px solid rgba(13,110,253,0.08); }
 
-        .form-control {
-            border-radius: 8px;
-        }
-    </style>
+    /* Modals */
+    .modal-content { border-radius: 12px; overflow: hidden; }
+    .modal-header { background: linear-gradient(90deg,#0d6efd,#0b5ed7); color:white; border-bottom:none; }
+    .form-control { border-radius: 10px; }
+
+    /* Small animations */
+    @keyframes fadeInUp {
+      from { opacity:0; transform: translateY(10px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    .fade-in-up { animation: fadeInUp .45s ease both; }
+
+    /* subtle badge style */
+    .badge-grade { padding:.45rem .6rem; border-radius: .5rem; font-weight:600; }
+
+    /* toast placement */
+    .toast-holder { position:fixed; right:1.25rem; bottom:1.25rem; z-index:1060; }
+
+    /* responsive adjustments */
+    @media (max-width:768px){
+      .metric .value { font-size:1.05rem; }
+      .table thead th:nth-child(1), .table tbody td:nth-child(1) { display:none; }
+    }
+
+  </style>
 </head>
 <body>
 
-<nav class="navbar navbar-dark bg-primary py-3">
-    <div class="container">
-        <a class="navbar-brand fw-bold fs-4" href="#">
-            Student Management System
+  <!-- Navbar -->
+  <nav class="navbar app-navbar py-2">
+    <div class="container d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <a class="navbar-brand d-flex gap-2 align-items-center" href="#">
+          <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#0d6efd,#0b5ed7);display:grid;place-items:center;color:white;font-weight:700;">
+            SM
+          </div>
+          <div>
+            <div class="fw-bold">Student Manager</div>
+            <div style="font-size:.78rem;color:var(--muted)">Campus edition</div>
+          </div>
         </a>
-    </div>
-</nav>
+      </div>
 
-<div class="container mt-5">
-
-    <!-- Header Row -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="page-title">Students Overview</h3>
-
-        <!-- Add Student Button -->
-        <button 
-            class="btn btn-primary btn-modern px-4" 
-            data-bs-toggle="modal" 
-            data-bs-target="#addStudentModal"
-        >
-            + Add Student
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm btn-pill me-2" id="refreshBtn" title="Refresh view">
+          <i class="bi bi-arrow-clockwise"></i> Refresh
         </button>
+        <button class="btn btn-primary btn-pill" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+          <i class="bi bi-plus-lg"></i> Add Student
+        </button>
+      </div>
     </div>
+  </nav>
 
-    <!-- Students Table -->
-    <div class="card card-modern">
-        <div class="card-body p-4">
-            <table class="table table-hover align-middle text-center">
-                <thead>
-                    <tr>
-                        <th style="width: 60px;">ID</th>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Grade</th>
-                        <th style="width: 120px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in students %}
-                    <tr>
-                        <td class="fw-bold">{{ student[0] }}</td>
-                        <td>{{ student[1] }}</td>
-                        <td>{{ student[2] }}</td>
-                        <td>{{ student[3] }}</td>
-                        <td>
-                            <a 
-                                href="{{ url_for('delete_student', id=student[0]) }}" 
-                                class="btn btn-danger btn-sm btn-modern"
-                                onclick="return confirm('Do you want to delete this student?');"
-                            >
-                                Delete
-                            </a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-muted py-4">
-                            No students available.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+  <!-- Main -->
+  <main class="py-4">
+    <div class="container">
 
-</div>
-
-<!-- Add Student Modal -->
-<div class="modal fade" id="addStudentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title fw-semibold">Add New Student</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      <!-- Top dashboard row -->
+      <div class="row g-3 mb-4 fade-in-up">
+        <div class="col-12 col-lg-8">
+          <div class="card-modern p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <h5 class="mb-0">Students Overview</h5>
+                <div class="text-muted small">Quick snapshot of student data</div>
+              </div>
+              <div class="text-end">
+                <small class="text-muted">Updated: <span id="lastUpdated">{{ config.get('LAST_UPDATED', '') }}</span></small>
+              </div>
             </div>
 
-            <form action="/add" method="POST">
-                <div class="modal-body px-4 py-4">
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Full Name</label>
-                        <input 
-                            required 
-                            name="name" 
-                            type="text" 
-                            class="form-control" 
-                            placeholder="Enter full name"
-                        >
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Age</label>
-                        <input 
-                            required 
-                            name="age" 
-                            type="number" 
-                            class="form-control" 
-                            placeholder="Enter age"
-                        >
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Grade</label>
-                        <input 
-                            required 
-                            name="grade" 
-                            type="text" 
-                            class="form-control" 
-                            placeholder="Enter grade"
-                        >
-                    </div>
-
+            <div class="row gy-3">
+              <div class="col-6 col-md-4">
+                <div class="metric">
+                  <div class="icon"><i class="bi bi-people-fill"></i></div>
+                  <div>
+                    <div class="value" id="metricTotal">{{ students|length }}</div>
+                    <div class="label">Total students</div>
+                  </div>
                 </div>
+              </div>
 
-                <div class="modal-footer border-0 px-4 pb-4">
-                    <button 
-                        type="button" 
-                        class="btn btn-secondary btn-modern" 
-                        data-bs-dismiss="modal"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        type="submit" 
-                        class="btn btn-primary btn-modern px-4"
-                    >
-                        Add Student
-                    </button>
+              <div class="col-6 col-md-4">
+                <div class="metric">
+                  <div class="icon"><i class="bi bi-calendar3"></i></div>
+                  <div>
+                    <div class="value" id="metricAvgAge">
+                      {% if students|length > 0 %}
+                        {% set ages = students | map(attribute=2) | list %}
+                        {{ (ages | sum) / (ages | length) | round(1) }}
+                      {% else %}
+                        0
+                      {% endif %}
+                    </div>
+                    <div class="label">Average age</div>
+                  </div>
                 </div>
-            </form>
+              </div>
 
+              <div class="col-12 col-md-4">
+                <div class="metric justify-content-between">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="icon"><i class="bi bi-award-fill"></i></div>
+                    <div>
+                      <div class="value" id="metricUniqueGrades">
+                        {% set grades = students | map(attribute=3) | list %}
+                        {{ grades | unique | list | length if students|length>0 else 0 }}
+                      </div>
+                      <div class="label">Grade groups</div>
+                    </div>
+                  </div>
+                  <div>
+                    <small class="text-muted">Grades: 
+                      {% if students|length > 0 %}
+                        {% set unique = grades | unique | list %}
+                        {{ unique | join(', ') }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div> <!-- row -->
+          </div>
         </div>
-    </div>
-</div>
 
-<!-- Bootstrap JS -->
-<script 
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
-</script>
+        <!-- Search + filters -->
+        <div class="col-12 col-lg-4">
+          <div class="card-modern p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div>
+                <h6 class="mb-0">Search & Filters</h6>
+                <div class="text-muted small">Find students quickly</div>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <div class="mb-3">
+                <label class="form-label small text-muted">Search</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                  <input id="searchInput" type="search" class="form-control" placeholder="Name, grade or ID" />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label small text-muted">Filter by grade</label>
+                <select id="gradeFilter" class="form-select">
+                  <option value="">All Grades</option>
+                  {% set grade_list = students | map(attribute=3) | list | unique %}
+                  {% for g in grade_list %}
+                    <option value="{{ g }}">{{ g }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button id="clearFilters" class="btn btn-ghost btn-sm btn-pill flex-grow-1">
+                  Clear
+                </button>
+                <button id="sortToggle" class="btn btn-outline-primary btn-sm btn-pill">
+                  <i class="bi bi-sort-alpha-down"></i> Sort
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- top row -->
+
+      <!-- Table + right column -->
+      <div class="row gy-3">
+        <div class="col-12 col-lg-8">
+          <div class="card-modern p-3">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="mb-0">Student Directory</h6>
+              <small class="text-muted">Click row to edit (client-side)</small>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th style="width:72px">ID</th>
+                    <th>Name</th>
+                    <th style="width:90px">Age</th>
+                    <th style="width:120px">Grade</th>
+                    <th style="width:150px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTable">
+                  {% for student in students %}
+                  <tr data-id="{{ student[0] }}" data-name="{{ student[1] }}" data-age="{{ student[2] }}" data-grade="{{ student[3] }}" class="fade-in-up">
+                    <td class="fw-bold">{{ student[0] }}</td>
+                    <td>{{ student[1] }}</td>
+                    <td>{{ student[2] }}</td>
+                    <td>
+                      <span class="badge-grade badge bg-light text-dark" title="Grade">{{ student[3] }}</span>
+                    </td>
+                    <td>
+                      <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary btn-pill btn-edit" title="Edit">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+
+                        <a href="{{ url_for('delete_student', id=student[0]) }}" class="btn btn-sm btn-danger btn-pill"
+                          onclick="return confirm('Delete student ID {{ student[0] }}?');" title="Delete">
+                          <i class="bi bi-trash"></i>
+                        </a>
+
+                        <button class="btn btn-sm btn-ghost btn-pill" onclick="copyId('{{ student[0] }}')" title="Copy ID">
+                          <i class="bi bi-clipboard"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No students found.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div> <!-- table-responsive -->
+          </div>
+        </div>
+
+        <!-- Right column: grade distribution & tips -->
+        <div class="col-12 col-lg-4">
+          <div class="card-modern p-3 mb-3">
+            <h6 class="mb-2">Grade Distribution</h6>
+            <div id="gradeList">
+              {% if students|length > 0 %}
+                {% set counts = {} %}
+                {% for s in students %}
+                  {% set _ = counts.update({ (s[3]): (counts.get(s[3],0) + 1) }) %}
+                {% endfor %}
+                {% for grade, count in counts.items() %}
+                  <div class="d-flex justify-content-between align-items-center py-2">
+                    <div class="text-muted small">{{ grade }}</div>
+                    <div class="fw-semibold">{{ count }}</div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="text-muted small">No grade data yet.</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card-modern p-3">
+            <h6 class="mb-2">About this system</h6>
+            <p class="small text-muted mb-2">
+              Student Manager is a lightweight web UI that sits on top of a Flask + MySQL backend.
+              Use it to create, view, and remove student records. This front-end focuses on usability,
+              quick discovery, and a modern look & feel.
+            </p>
+            <ul class="small text-muted mb-0">
+              <li>Tech stack: Flask (backend), MySQL, Jinja2 templates, Bootstrap 5.</li>
+              <li>UX: Search, filters, edit modal, toast notifications, responsive layout.</li>
+              <li>Accessibility: semantic elements, tooltips, sensible focus order.</li>
+            </ul>
+          </div>
+        </div>
+      </div> <!-- table row -->
+
+    </div> <!-- container -->
+  </main>
+
+  <!-- Add Student Modal (submits to /add) -->
+  <div class="modal fade" id="addStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Student</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form action="/add" method="POST" id="addForm">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label">Full name</label>
+              <input name="name" required type="text" class="form-control" placeholder="e.g., Jane Doe">
+            </div>
+
+            <div class="row gx-2">
+              <div class="col-6 mb-3">
+                <label class="form-label">Age</label>
+                <input name="age" required type="number" min="1" class="form-control" placeholder="18">
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">Grade</label>
+                <input name="grade" required type="text" class="form-control" placeholder="e.g., A1">
+              </div>
+            </div>
+
+            <div class="form-text small text-muted">All fields are required.</div>
+          </div>
+
+          <div class="modal-footer border-0 p-3">
+            <button type="button" class="btn btn-outline-secondary btn-pill" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-pill">Add student</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Student Modal (client-side pre-fill, posts to /edit) -->
+  <div class="modal fade" id="editStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Student</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form action="/edit" method="POST" id="editForm">
+          <div class="modal-body p-4">
+            <input type="hidden" name="id" id="editId">
+            <div class="mb-3">
+              <label class="form-label">Full name</label>
+              <input name="name" id="editName" required type="text" class="form-control">
+            </div>
+
+            <div class="row gx-2">
+              <div class="col-6 mb-3">
+                <label class="form-label">Age</label>
+                <input name="age" id="editAge" required type="number" min="1" class="form-control">
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">Grade</label>
+                <input name="grade" id="editGrade" required type="text" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-text small text-muted">Editing will update the record if your server implements /edit.</div>
+          </div>
+
+          <div class="modal-footer border-0 p-3">
+            <button type="button" class="btn btn-outline-secondary btn-pill" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-pill">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast holder -->
+  <div class="toast-holder" id="toastHolder"></div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- UI behavior script -->
+  <script>
+    (function(){
+      // Utility: show toast
+      function showToast(title, msg, autohide = true) {
+        const holder = document.getElementById('toastHolder');
+        const id = 't' + Date.now();
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+          <div id="${id}" class="toast align-items-center text-bg-light border-0 mb-2" role="status" aria-live="polite" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body">
+                <strong class="d-block">${title}</strong>
+                <div class="small text-muted">${msg}</div>
+              </div>
+              <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>`;
+        holder.appendChild(wrapper);
+        const bsToast = new bootstrap.Toast(document.getElementById(id), { delay: 3500, autohide });
+        bsToast.show();
+        // remove from DOM after hidden
+        document.getElementById(id).addEventListener('hidden.bs.toast', () => wrapper.remove());
+      }
+
+      // Copy ID helper
+      window.copyId = function(id){
+        navigator.clipboard?.writeText(id).then(() => {
+          showToast('Copied', 'Student ID ' + id + ' copied to clipboard.');
+        }).catch(()=> {
+          showToast('Copy failed', 'Could not copy ID to clipboard.');
+        });
+      };
+
+      // Row click — open edit modal and pre-fill
+      document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const tr = e.target.closest('tr') || e.target.closest('tr');
+          if (!tr) return;
+          const id = tr.dataset.id;
+          const name = tr.dataset.name;
+          const age = tr.dataset.age;
+          const grade = tr.dataset.grade;
+          document.getElementById('editId').value = id;
+          document.getElementById('editName').value = name;
+          document.getElementById('editAge').value = age;
+          document.getElementById('editGrade').value = grade;
+          const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+          modal.show();
+        });
+      });
+
+      // Simple search & filter & sort logic
+      const searchInput = document.getElementById('searchInput');
+      const gradeFilter = document.getElementById('gradeFilter');
+      const clearFilters = document.getElementById('clearFilters');
+      const sortToggle = document.getElementById('sortToggle');
+      let sortAsc = true;
+
+      function normalize(s){ return (s||'').toString().toLowerCase(); }
+
+      function applyFilters() {
+        const q = normalize(searchInput.value);
+        const grade = gradeFilter.value;
+        const rows = Array.from(document.querySelectorAll('#studentsTable tr[data-id]'));
+        rows.forEach((tr) => {
+          const name = normalize(tr.dataset.name);
+          const id = normalize(tr.dataset.id);
+          const g = normalize(tr.dataset.grade);
+          let visible = true;
+          if (q) {
+            visible = [name, id, g].some(x => x.includes(q));
+          }
+          if (grade && g !== normalize(grade)) visible = false;
+          tr.style.display = visible ? '' : 'none';
+        });
+        applySort();
+      }
+
+      function applySort(){
+        const tbody = document.getElementById('studentsTable');
+        const rows = Array.from(tbody.querySelectorAll('tr[data-id]')).filter(r => r.style.display !== 'none');
+        rows.sort((a,b) => {
+          const na = normalize(a.dataset.name), nb = normalize(b.dataset.name);
+          return sortAsc ? na.localeCompare(nb) : nb.localeCompare(na);
+        });
+        rows.forEach(r => tbody.appendChild(r));
+      }
+
+      searchInput.addEventListener('input', applyFilters);
+      gradeFilter.addEventListener('change', applyFilters);
+      clearFilters.addEventListener('click', () => {
+        searchInput.value = '';
+        gradeFilter.value = '';
+        applyFilters();
+      });
+      sortToggle.addEventListener('click', () => {
+        sortAsc = !sortAsc;
+        sortToggle.innerHTML = sortAsc ? '<i class="bi bi-sort-alpha-down"></i> Sort' : '<i class="bi bi-sort-alpha-up"></i> Sort';
+        applySort();
+      });
+
+      // Refresh button: subtle animation + toast
+      document.getElementById('refreshBtn').addEventListener('click', () => {
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('disabled');
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise bi-spin"></i> Refreshing';
+        setTimeout(() => {
+          btn.classList.remove('disabled');
+          btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh';
+          showToast('Refreshed', 'View updated (client-side).');
+        }, 700);
+      });
+
+      // Accessibility: tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+      tooltipTriggerList.forEach(function (el) {
+        new bootstrap.Tooltip(el);
+      });
+
+      // Initialize filters on load
+      document.addEventListener('DOMContentLoaded', () => {
+        applyFilters();
+      });
+
+      // Optionally show a welcome toast
+      showToast('Welcome', 'Student Manager loaded. Use Search or Add Student to begin.', true);
+    })();
+  </script>
 
 </body>
 </html>
