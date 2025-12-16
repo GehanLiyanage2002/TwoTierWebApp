@@ -11,7 +11,7 @@ services:
     environment:
       DATABASE_HOST: mysql
       DATABASE_USER: root
-      DATABASE_PASSWORD: 
+      DATABASE_PASSWORD: rootpassword
       DATABASE_NAME: StudentDB
     restart: always
 
@@ -20,9 +20,9 @@ services:
     container_name: student-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 
+      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: StudentDB
       MYSQL_USER: root
-      MYSQL_PASSWORD: 
+      MYSQL_PASSWORD: rootpassword
     ports:
       - "3306:3306"
