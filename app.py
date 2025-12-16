@@ -1,16 +1,25 @@
 import os
+from time import time
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 # // Database configuration
 app = Flask(__name__)
 
 # Database configuration via environment variables
-db = mysql.connector.connect(
-    host=os.environ.get("DATABASE_HOST", "mysql"),
-    user=os.environ.get("DATABASE_USER", "root"),
-    password=os.environ.get("DATABASE_PASSWORD", "rootpassword"),
-    database=os.environ.get("DATABASE_NAME", "StudentDB")
-)
+db = None
+while True:
+    try:
+        db = mysql.connector.connect(
+            host=os.environ.get("DATABASE_HOST", "mysql"),
+            user=os.environ.get("DATABASE_USER", "root"),
+            password=os.environ.get("DATABASE_PASSWORD", "rootpassword"),
+            database=os.environ.get("DATABASE_NAME", "StudentDB")
+        )
+        break
+    except mysql.connector.Error as e:
+        print("Waiting for MySQL...", e)
+        time.sleep(3)
+
 cursor = db.cursor()
 
 @app.route('/')
