@@ -30,6 +30,7 @@ pipeline {
             }
         }
     }
+<<<<<<< HEAD:jenkinsfile
 
     post {
         always {
@@ -42,4 +43,6 @@ pipeline {
             echo "Deployment failed"
         }
     }
+=======
+>>>>>>> 61a23ef1716b6294a6aad595507d5484cb7750f8:Jenkinsfile
 }
