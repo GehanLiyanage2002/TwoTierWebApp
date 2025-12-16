@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "flask-app"
+        IMAGE_NAME = "student-flask-app"
     }
 
     stages {
@@ -13,19 +13,20 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Docker Images') {
             steps {
-                sh '''
-                docker build -t $IMAGE_NAME:latest .
-                '''
+                sh 'docker compose build'
             }
         }
 
         stage('Deploy with Docker Compose') {
             steps {
                 sh '''
+                # Stop old containers if any
                 docker compose down || true
-                docker compose up -d --build
+
+                # Start containers in detached mode
+                docker compose up -d
                 '''
             }
         }
@@ -33,13 +34,14 @@ pipeline {
 
     post {
         always {
+            # Cleanup dangling images
             sh 'docker image prune -f || true'
         }
         success {
-            echo "Deployment completed successfully"
+            echo "Deployment successful! Visit http://52.184.82.99:5000"
         }
         failure {
-            echo "Deployment failed"
+            echo "Deployment failed. Check container logs for details."
         }
     }
 }
