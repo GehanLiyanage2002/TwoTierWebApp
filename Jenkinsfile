@@ -34,7 +34,7 @@ pipeline {
 
     post {
         always {
-            # Cleanup dangling images
+            
             sh 'docker image prune -f || true'
         }
         success {
