@@ -22,8 +22,5 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword    # required for root
       MYSQL_DATABASE: StudentDB            # optional initial DB
-      # Remove MYSQL_USER=root entirely
-      # MYSQL_USER: user
-      # MYSQL_PASSWORD: userpassword
     ports:
       - "3306:3306"

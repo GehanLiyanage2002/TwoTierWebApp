@@ -1,11 +1,11 @@
 import os
-from time import time
+import time
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
-# // Database configuration
+
 app = Flask(__name__)
 
-# Database configuration via environment variables
+# Retry connecting to MySQL until it is ready
 db = None
 while True:
     try:
@@ -15,12 +15,14 @@ while True:
             password=os.environ.get("DATABASE_PASSWORD", "rootpassword"),
             database=os.environ.get("DATABASE_NAME", "StudentDB")
         )
+        print("Connected to MySQL successfully!")
         break
     except mysql.connector.Error as e:
         print("Waiting for MySQL...", e)
-        time.sleep(3)
+        time.sleep(3)  # <-- make sure `import time` is present
 
 cursor = db.cursor()
+
 
 @app.route('/')
 def index():
